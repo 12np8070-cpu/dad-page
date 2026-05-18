@@ -154,8 +154,18 @@ body {
   line-height: 1.5;
 }
 
-.toc li {
-  margin-bottom: 0.45rem;
+.toc > ol > li {
+  margin-bottom: 0.65rem;
+}
+
+.toc ol ol {
+  margin-top: 0.35rem;
+  padding-left: 0.9rem;
+  font-size: 0.75rem;
+}
+
+.toc ol ol li {
+  margin-bottom: 0.3rem;
 }
 
 .toc a {
@@ -197,6 +207,19 @@ body {
   border: 0;
 }
 
+.article h2,
+.article h3,
+.article h4 {
+  scroll-margin-top: 1.5rem;
+}
+
+.article h2:target,
+.article h3:target,
+.article h4:target {
+  background: linear-gradient(90deg, rgba(255, 244, 224, 0.9) 0%, transparent 85%);
+  border-radius: 4px;
+}
+
 .article h2 {
   font-family: var(--font-sans);
   font-size: 1.375rem;
@@ -206,6 +229,8 @@ body {
   padding-bottom: 0.5rem;
   border-bottom: 2px solid var(--accent-soft);
   line-height: 1.4;
+  position: relative;
+  padding-left: 1.35rem;
 }
 
 .article h2:first-of-type {
@@ -218,9 +243,51 @@ body {
   font-weight: 700;
   color: var(--text);
   margin: 2rem 0 0.75rem;
-  padding-left: 0.85rem;
+  padding-left: 1.85rem;
   border-left: 4px solid var(--accent);
   line-height: 1.45;
+  position: relative;
+}
+
+.heading-anchor {
+  position: absolute;
+  left: 0;
+  top: 0.1em;
+  color: var(--accent-soft);
+  text-decoration: none;
+  font-weight: 400;
+  font-size: 0.9em;
+  line-height: 1;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s;
+}
+
+.article h2 .heading-anchor {
+  left: 0.1rem;
+}
+
+.article h3 .heading-anchor {
+  left: 0.35rem;
+}
+
+.article h2:hover .heading-anchor,
+.article h3:hover .heading-anchor,
+.article h4:hover .heading-anchor,
+.heading-anchor:focus-visible,
+.article h2:target .heading-anchor,
+.article h3:target .heading-anchor,
+.article h4:target .heading-anchor {
+  opacity: 1;
+}
+
+.heading-anchor:hover,
+.heading-anchor:focus-visible {
+  color: var(--accent);
+}
+
+.heading-anchor.is-copied {
+  color: var(--accent);
+  opacity: 1;
 }
 
 .article h4 {

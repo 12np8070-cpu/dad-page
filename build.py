@@ -22,13 +22,50 @@ def slugify(text: str) -> str:
     return text or "section"
 
 
+def heading_anchor_id(plain_text: str, used: set[str]) -> str:
+    text = plain_text.strip()
+
+    numbered = re.match(r"^(\d+)\.\s*(.+)$", text)
+    if numbered:
+        short = re.split(r"[：:]", numbered.group(2), maxsplit=1)[0].strip()
+        base = slugify(f"{numbered.group(1)}-{short}")
+    else:
+        section = re.match(r"^([一二三四五六七八九十百千]+)、\s*(.+)$", text)
+        if section:
+            short = re.split(r"[：:]", section.group(2), maxsplit=1)[0].strip()
+            base = slugify(f"{section.group(1)}-{short}")
+        else:
+            short = re.split(r"[：:]", text, maxsplit=1)[0].strip()
+            base = slugify(short)
+
+    candidate = base or "section"
+    if candidate not in used:
+        used.add(candidate)
+        return candidate
+
+    suffix = 2
+    while f"{candidate}-{suffix}" in used:
+        suffix += 1
+    unique = f"{candidate}-{suffix}"
+    used.add(unique)
+    return unique
+
+
 def add_heading_ids(html: str) -> str:
+    used: set[str] = set()
+
     def repl(m: re.Match[str]) -> str:
         level, inner = m.group(1), m.group(2)
-        sid = slugify(inner)
-        return f'<h{level} id="{sid}">{inner}</h{level}>'
+        plain = re.sub(r"<[^>]+>", "", inner)
+        sid = heading_anchor_id(plain, used)
+        anchor = (
+            f'<a class="heading-anchor" href="#{sid}" '
+            f'aria-label="複製此段連結" title="複製連結">¶</a>'
+        )
+        return f'<h{level} id="{sid}">{anchor}{inner}</h{level}>'
 
-    return re.sub(r"<h([1-4])>(.+?)</h\1>", repl, html, flags=re.DOTALL)
+    # h1 is shown in the site header only; anchors start at h2–h4.
+    return re.sub(r"<h([2-4])>(.+?)</h\1>", repl, html, flags=re.DOTALL)
 
 
 def enhance_html(html: str) -> str:
@@ -63,7 +100,7 @@ def enhance_html(html: str) -> str:
 
     # Highlight the 10-point overview list in section 1
     html = re.sub(
-        r'(<h2 id="一整體情況概述">.*?</h2>.*?<p>這位父親的互動方式有幾個明顯特徵：</p>\s*)<ol>',
+        r'(<h2 id="[^"]*整體情況概述">.*?</h2>.*?<p>這位父親的互動方式有幾個明顯特徵：</p>\s*)<ol>',
         r'\1<ol class="overview-list">',
         html,
         count=1,
@@ -73,18 +110,59 @@ def enhance_html(html: str) -> str:
     return html
 
 
+_HEADING_INNER = r'<a class="heading-anchor"[^>]*>[^<]*</a>(.+?)</h\1>'
+
+
+def toc_label(title: str, max_len: int = 40) -> str:
+    short = re.split(r"[：:]", title, maxsplit=1)[0].strip()
+    if len(short) <= max_len:
+        return short
+    return short[: max_len - 1] + "…"
+
+
 def build_toc(html: str) -> str:
-    items: list[str] = []
-    for m in re.finditer(r'<h2 id="([^"]+)">(.+?)</h2>', html):
-        hid, title = m.group(1), re.sub(r"<[^>]+>", "", m.group(2))
-        items.append(f'    <li><a href="#{hid}">{title}</a></li>')
-    if not items:
+    sections: list[dict[str, object]] = []
+    current: dict[str, object] | None = None
+
+    for m in re.finditer(
+        rf'<h([23]) id="([^"]+)">{_HEADING_INNER}',
+        html,
+        flags=re.DOTALL,
+    ):
+        level = int(m.group(1))
+        hid = m.group(2)
+        title = re.sub(r"<[^>]+>", "", m.group(3)).strip()
+        if level == 2:
+            current = {"id": hid, "title": title, "children": []}
+            sections.append(current)
+        elif current is not None:
+            current["children"].append({"id": hid, "title": title})
+        else:
+            sections.append({"id": hid, "title": title, "children": []})
+
+    if not sections:
         return ""
+
+    lines: list[str] = []
+    for section in sections:
+        sid, title = section["id"], section["title"]
+        lines.append(f'    <li><a href="#{sid}">{toc_label(title)}</a>')
+        children = section.get("children") or []
+        if children:
+            lines.append("      <ol>")
+            for child in children:
+                cid, ctitle = child["id"], child["title"]
+                lines.append(
+                    f'        <li><a href="#{cid}">{toc_label(ctitle)}</a></li>'
+                )
+            lines.append("      </ol>")
+        lines.append("    </li>")
+
     return (
         '<nav class="toc" aria-label="章節目錄">\n'
         '  <p class="toc__title">目錄</p>\n'
         "  <ol>\n"
-        + "\n".join(items)
+        + "\n".join(lines)
         + "\n  </ol>\n"
         "</nav>"
     )
