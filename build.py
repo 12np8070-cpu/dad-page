@@ -197,9 +197,6 @@ def main() -> None:
   <meta name="description" content="家庭中長期否定型互動模式的整理與心理學分析" />
   <meta name="robots" content="index, follow" />
   <title>{page_title}</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="{CSS}" />
 </head>
 <body>

@@ -1,3 +1,19 @@
+@font-face {
+  font-family: "金萱";
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  src: url("../../fonts/金萱3.0 三分糖 jfjinxuan3.0-Book.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "金萱";
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  src: url("../../fonts/金萱3.0 七分糖 jf-jinxuan-3.0-Bold.otf") format("opentype");
+}
+
 :root {
   --bg: #f7f3ed;
   --bg-card: #fffcf7;
@@ -14,8 +30,8 @@
   --disclaimer-border: #9bb5c9;
   --shadow: 0 1px 3px rgba(42, 38, 34, 0.06);
   --radius: 10px;
-  --font-serif: "Noto Serif TC", "Songti TC", "PMingLiU", serif;
-  --font-sans: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  --font-serif: "金萱", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  --font-sans: "金萱", "PingFang TC", "Microsoft JhengHei", sans-serif;
   --max-width: 46rem;
   --sidebar-width: 15.5rem;
 }
