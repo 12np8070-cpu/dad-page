@@ -435,6 +435,73 @@ body {
   text-decoration-thickness: 2px;
 }
 
+/* Section 8 — standalone chapter */
+.analysis-chapter {
+  margin-top: 1rem;
+  padding-top: 0.5rem;
+  border-top: 3px double var(--accent-soft);
+}
+
+.analysis-chapter > h2 {
+  font-size: 1.5rem;
+  margin-top: 2rem;
+}
+
+.analysis-chapter .chapter-nav,
+.analysis-chapter > p:first-of-type a {
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+  padding: 0.35rem 0.75rem;
+  background: rgba(139, 78, 61, 0.06);
+  border: 1px solid var(--accent-soft);
+  border-radius: 999px;
+}
+
+.analysis-chapter > p:first-of-type a:hover {
+  background: rgba(139, 78, 61, 0.12);
+  text-decoration: underline;
+}
+
+.analysis-chapter .lead {
+  font-size: 1.125rem;
+  line-height: 1.8;
+  color: var(--text);
+}
+
+.analysis-chapter h3 {
+  font-size: 1.125rem;
+}
+
+.analysis-chapter h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-top: 1.75rem;
+  padding-left: 1.25rem;
+  border-left: 3px solid var(--highlight-border);
+}
+
+.key-point--final {
+  font-size: 1.1rem;
+  border-left-width: 5px;
+  box-shadow: var(--shadow);
+}
+
+.article .back-link {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+}
+
 /* References section */
 .article h2:last-of-type + ol {
   font-family: var(--font-sans);

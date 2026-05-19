@@ -11,7 +11,10 @@ from markdown.extensions import fenced_code, tables
 
 ROOT = Path(__file__).resolve().parent
 CONTENT = ROOT / "content" / "article.md"
+SUMMARY = ROOT / "content" / "summary-analysis.md"
 OUT = ROOT / "index.html"
+SUMMARY_OUT = ROOT / "summary-analysis.html"
+REF_MARKER = "## 參考資料"
 CSS = "assets/css/main.css"
 
 
@@ -107,7 +110,45 @@ def enhance_html(html: str) -> str:
         flags=re.DOTALL,
     )
 
+    # Section 8: distinct chapter styling + conclusion list
+    html = re.sub(
+        r'(<h2 id="[^"]*八-總結分析"[^>]*>.*?</h2>)',
+        r'<section class="analysis-chapter">\1',
+        html,
+        count=1,
+    )
+    html = re.sub(
+        r'(<h2 id="[^"]*參考資料"[^>]*>)',
+        r"</section>\n\1",
+        html,
+        count=1,
+    )
+    html = re.sub(
+        r'(<section class="analysis-chapter">.*?<h3 id="[^"]*3-最核心的結論"[^>]*>.*?</h3>\s*)<p>這次事件',
+        r'\1<p class="lead">這次事件',
+        html,
+        count=1,
+        flags=re.DOTALL,
+    )
+    html = re.sub(
+        r'(<h3 id="[^"]*11-這份新資料的總結判斷"[^>]*>.*?</h3>\s*<p>這次事件可以整理成一句話：</p>\s*)<p><strong>',
+        r'\1<p class="key-point key-point--final"><strong>',
+        html,
+        count=1,
+        flags=re.DOTALL,
+    )
+
     return html
+
+
+def merge_article_markdown() -> str:
+    main = CONTENT.read_text(encoding="utf-8")
+    summary = SUMMARY.read_text(encoding="utf-8").strip()
+    if REF_MARKER not in main:
+        raise ValueError(f"Missing {REF_MARKER!r} in {CONTENT}")
+    before, after = main.split(REF_MARKER, 1)
+    before = re.sub(r"\n---\s*$", "", before.rstrip())
+    return f"{before}\n\n---\n\n{summary}\n\n---\n\n{REF_MARKER}{after}"
 
 
 _HEADING_INNER = r'<a class="heading-anchor"[^>]*>[^<]*</a>(.+?)</h\1>'
@@ -168,8 +209,7 @@ def build_toc(html: str) -> str:
     )
 
 
-def main() -> None:
-    md_text = CONTENT.read_text(encoding="utf-8")
+def render_page_html(md_text: str) -> tuple[str, str, str]:
     body = markdown.markdown(
         md_text,
         extensions=[
@@ -188,7 +228,10 @@ def main() -> None:
     page_title = (
         re.sub(r"<[^>]+>", "", title_match.group(1)) if title_match else "文章"
     )
+    return body, page_title, toc_html
 
+
+def write_html(out_path: Path, body: str, page_title: str, toc_html: str) -> None:
     template = f"""<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
@@ -229,8 +272,24 @@ def main() -> None:
     # Fix accidental motion-wrap tags from f-string - I used wrong placeholder
     template = template.replace("<motion-wrap>", "").replace("</motion-wrap>", "")
 
-    OUT.write_text(template, encoding="utf-8")
-    print(f"Wrote {OUT} ({OUT.stat().st_size:,} bytes)")
+    out_path.write_text(template, encoding="utf-8")
+    print(f"Wrote {out_path} ({out_path.stat().st_size:,} bytes)")
+
+
+def main() -> None:
+    md_text = merge_article_markdown()
+    body, page_title, toc_html = render_page_html(md_text)
+    write_html(OUT, body, page_title, toc_html)
+
+    summary_only = SUMMARY.read_text(encoding="utf-8").strip()
+    summary_only = re.sub(r"^## 八、總結分析\s*\n", "", summary_only, count=1)
+    summary_md = (
+        "# 八、總結分析\n\n"
+        + summary_only
+        + "\n\n---\n\n[← 返回完整文章](index.html#八-總結分析)\n"
+    )
+    summary_body, summary_title, summary_toc = render_page_html(summary_md)
+    write_html(SUMMARY_OUT, summary_body, summary_title, summary_toc)
 
 
 if __name__ == "__main__":
